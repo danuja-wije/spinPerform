@@ -191,8 +191,7 @@ def calculate(n_clicks,curr_user):
         query = {"user": curr_user}
         count = history_collection.count_documents(query)
         print("count",count)
-        if count < 8:
-
+        if count < 2:
             arm_angle_exceeded = True
             danger_area_detected = True
             foot_angle_violated = True
@@ -342,11 +341,14 @@ def upload_image(contents,filename):
     # print("file name is -------------------- ",filename)
     # # copied_filename = os.path.join(UPLOAD_DIRECTORY, 'copied_image.jpg')
     # # shutil.copy(image_filename, copied_filename)
+
+    decoded = base64.b64decode(contents.split(',')[1])
+    filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+    with open(filepath, 'wb') as f:
+        f.write(decoded)
+
     try:
-        if filename == "lg_1.jpg":
-            OUTPUT_DICT['no_ball'] = lb_model.model("uploads/lg_1.jpg")
-        else:
-            OUTPUT_DICT['no_ball'] = lb_model.model("uploads/lg_2.jpg")
+        OUTPUT_DICT['no_ball'] = lb_model.model(filepath)
         return [html.Img(src=app.get_asset_url('done.gif'),style={'width':'50px','height':'50px'})]
     except:
         return [html.Img(src=app.get_asset_url('not_done.gif'))]
@@ -374,12 +376,14 @@ def upload_image(contents,filename):
     # print("file name is -------------------- ",image_filename)
     # copied_filename = os.path.join(UPLOAD_DIRECTORY, 'copied_image.jpg')
     # shutil.copy(image_filename, copied_filename)
+    decoded = base64.b64decode(contents.split(',')[1])
+    filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+    with open(filepath, 'wb') as f:
+        f.write(decoded)
     try:
-        if filename == "y2.JPG":
-            OUTPUT_DICT['leg_ball'] = ff_model.model("uploads/y2.JPG")
-        else:
-            OUTPUT_DICT['leg_ball'] = ff_model.model("uploads/n2.jpg")
+        OUTPUT_DICT['leg_ball'] = ff_model.model(filepath)
         return [html.Img(src=app.get_asset_url('done.gif'),style={'width':'50px','height':'50px'})]
+
     except:
         return [html.Img(src=app.get_asset_url('not_done.gif'))]
 
@@ -406,11 +410,12 @@ def upload_image(contents,filename):
     # print("file name is -------------------- ",image_filename)
     # copied_filename = os.path.join(UPLOAD_DIRECTORY, 'copied_image.jpg')
     # shutil.copy(image_filename, copied_filename)
+    decoded = base64.b64decode(contents.split(',')[1])
+    filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+    with open(filepath, 'wb') as f:
+        f.write(decoded)
     try:
-        if filename == "danger area test_1.jpg":
-            OUTPUT_DICT['danger_ball'] = dm_model.model("uploads/danger area test_1.jpg")
-        else:
-            OUTPUT_DICT['danger_ball'] = dm_model.model("uploads/non danger area test_1.jpg")
+        OUTPUT_DICT['danger_ball'] = dm_model.model(filepath)
         return [html.Img(src=app.get_asset_url('done.gif'),style={'width':'50px','height':'50px'})]
     except:
         return [html.Img(src=app.get_asset_url('not_done.gif'))]
@@ -439,12 +444,12 @@ def upload_image(contents,filename):
     # copied_filename = os.path.join(UPLOAD_DIRECTORY, 'copied_image.jpg')
     # shutil.copy(image_filename, copied_filename)
 
-
+    decoded = base64.b64decode(contents.split(',')[1])
+    filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+    with open(filepath, 'wb') as f:
+        f.write(decoded)
     try:
-        if filename == "arm_1.jpg":
-            OUTPUT_DICT['arm-_ball'] = ab_model.model("uploads/arm_1.jpg")
-        else:
-            OUTPUT_DICT['arm-_ball'] = ab_model.model("uploads/arm_2.jpg")
+        OUTPUT_DICT['arm-_ball'] = ab_model.model(filepath)
         return [html.Img(src=app.get_asset_url('done.gif'),style={'width':'50px','height':'50px'})]
     except:
         return [html.Img(src=app.get_asset_url('not_done.gif'))]
