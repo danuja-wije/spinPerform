@@ -9,7 +9,7 @@ import shutil
 from app import app
 from app import server
 
-import evaluate,register_new,login,profile,payment
+import evaluate,register_new,login,payment,profile_1
 import user
 
 # Connect to MongoDB
@@ -217,7 +217,7 @@ def load_content(pathname,logger,sign):
             elif pathname == '/app/leg_angle':
                 return None,val
             elif pathname == '/profile':
-                return profile.prof,val
+                return profile_1.prof,val
             elif pathname == '/payment':
                 return payment.payment,val
             else:
@@ -238,4 +238,4 @@ def load_content(pathname,logger,sign):
             return register_new.log,val
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)

@@ -191,7 +191,7 @@ def calculate(n_clicks,curr_user):
         query = {"user": curr_user}
         count = history_collection.count_documents(query)
         print("count",count)
-        if count < 2:
+        if count < 6:
             arm_angle_exceeded = True
             danger_area_detected = True
             foot_angle_violated = True
