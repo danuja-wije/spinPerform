@@ -8,7 +8,7 @@ import pymongo
 import shutil
 from app import app
 from app import server
-
+from datetime import datetime
 import evaluate,register_new,login,payment,profile_1
 import user
 
@@ -238,4 +238,4 @@ def load_content(pathname,logger,sign):
             return register_new.log,val
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=False)

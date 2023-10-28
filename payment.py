@@ -3,7 +3,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
+from dash.dependencies import State
+from dash.exceptions import PreventUpdate
 from app import app
+import pymongo
+
+client = pymongo.MongoClient("mongodb+srv://common:admin@cluster0.epwxvmc.mongodb.net/")
+db = client["user_database"]
+payment_collection = db["payment"]
 payment = html.Div([
     dbc.Container([
         dbc.Row([
@@ -59,10 +66,41 @@ payment = html.Div([
 
 @app.callback(
     Output('payment-status', 'children'),
-    Input('submit-button', 'n_clicks')
+    [Input('submit-button', 'n_clicks')],
+    [State('card-number', 'value'),
+     State('cvv', 'value'),
+     State('expire-date', 'value')]
 )
-def update_payment_status(n_clicks):
-    if n_clicks > 0:
-        return "Payment successful!"
-    return ""
+def update_payment_status(n_clicks, card_number, cvv, expire_date):
+    if n_clicks == 0:
+        raise PreventUpdate
 
+    # Card Number Validation
+    if not len(str(card_number)) == 16:
+        return "Invalid Card Number"
+
+    # CVV Validation
+    if not len(str(cvv)) == 3:
+        return "Invalid CVV"
+
+    # Expiration Date Validation
+    # try:
+    #     exp_date = datetime.strptime(expire_date, "%m/%Y")
+    #     if exp_date <= datetime.now():
+    #         return "Card has expired"
+    # except ValueError:
+    #     return "Invalid Expiration Date format. Please use MM/YYYY."
+
+    # Construct the data to be saved
+    payment_data = {
+        "card_number": card_number,
+        "cvv": cvv,
+        "expire_date": expire_date
+    }
+
+    # Connect to MongoDB and insert data
+    try:
+        payment_collection.insert_one(payment_data)
+        return "Payment successful!"
+    except pymongo.errors.PyMongoError as e:
+        return f"Error: {str(e)}"  # Handle the error appropriately

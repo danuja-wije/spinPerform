@@ -57,7 +57,8 @@ def profile_history(n_clicks,current_user,relayout_data):
     query = {'username': current_user} 
     try:
         user = users_collection.find_one(query)
-
+        if 'name' not in user.keys():
+            user['name'] = user['username']
         if not current_user == 'False' or current_user is not None:
             query = {'user': current_user}  # Replace 'field_name' with your actual field name
             data = history_collection.find(query)

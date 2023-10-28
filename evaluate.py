@@ -180,18 +180,104 @@ outer_box = html.Div([
     ],className="result-outer-box",id="result-outer-box"),
     html.Div(id="output-overall-result")
 ])
+def create_heading(text, style):
+    return Paragraph(text, style["Heading1"])
 
+def create_table(data):
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    ]))
+    return table
+
+def create_paragraph(text, style):
+    return Paragraph(text, style["Normal"])
+
+def generate_report(df, arm_angle_exceeded, danger_area_detected, foot_angle_violated, no_ball_detected, styles):
+    elements = []
+    
+    # Heading
+    elements.append(create_heading('<para alignment="center">Cricket Bowling Analysis Report</para>', styles))
+    
+    # Table
+    data = [['Report Content'], [df]]
+    elements.append(create_table(data))
+    elements.append(create_paragraph("<br />\n", styles))
+    
+    # Sections
+    if arm_angle_exceeded:
+        arm_angle_section = (
+            "ARM ANGLE<br />\n"
+            "Standardized elbow angle exceeded! You are exceeding the 15 degrees angle during the ball releasing."
+            " To avoid:<br />\n"
+            "• Focus on maintaining a relaxed wrist and grip on the ball throughout the delivery stride.<br />\n"
+            "• Focus on strengthening your shoulder, core, and leg muscles to improve stability and control during the bowling action.<br />\n"
+            "• Consciously focus on maintaining a straight and smooth arm throughout the delivery stride.<br />\n"
+            "• Keep your hand as straight as possible while delivering the ball.<br />\n<br />\n"
+        )
+        elements.append(create_paragraph(arm_angle_section, styles))
+        elements.append(create_paragraph("<br />\n", styles))
+
+    if danger_area_detected:
+        danger_area_section = (
+            "DANER AREA<br />\n"
+            "Danger area detected! You are stepping on the danger area during your follow through."
+            " To avoid:<br />\n"
+            "• Shorten your stride during delivery and follow through.<br />\n"
+            "• Maintain a straight line with correct alignment.<br />\n"
+            "• Control and balance to maintain stability.<br /><br />\n"
+        )
+        elements.append(create_paragraph(danger_area_section, styles))
+        elements.append(create_paragraph("<br />\n", styles))
+
+    if foot_angle_violated:
+        foot_angle_section = (
+            "FOOT ANGLE<br />\n"
+            "Standardized front foot angle violated! You are keeping your front foot in a wrong angle."
+            " To avoid:<br />\n"
+            "• Have a clear idea about the size of the correct angle for the foot to be kept which is from 30 to 60 degrees.<br />\n"
+            "• Be focused before taking your startup run to deliver the ball.<br />\n"
+            "• Be relaxed and mindful at the moment you keep your foot.<br /><br />\n"
+        )
+        elements.append(create_paragraph(foot_angle_section, styles))
+        elements.append(create_paragraph("<br />\n", styles))
+
+    if no_ball_detected:
+        no_ball_section = (
+            "NO BALL<br />\n"
+            "No ball detected! You are overstepping the crease."
+            " To avoid:<br />\n"
+            "• Maintain a proper run-up: Practice your run-up regularly and make sure it is consistent. This will help you maintain your balance and avoid overstepping the crease.<br />\n"
+            "• Focus on the crease: Keep your eyes on the crease while running in to bowl. This will help you judge the distance accurately and prevent overstepping.<br />\n"
+            "• Mark your run-up: If needed, mark your run-up with a small marker or cone. This can act as a visual cue and help you stay behind the crease.<br />\n"
+            "• Practice rhythm and timing: Work on your timing during the run-up so that your front foot lands comfortably behind the popping crease. This will reduce the chances of overstepping.<br />\n"
+            "• Develop body awareness: Pay attention to your body position and movements during the delivery stride. Practice maintaining control and balance throughout your action.<br /><br />\n"
+        )
+        elements.append(create_paragraph(no_ball_section, styles))
+        elements.append(create_paragraph("<br />\n", styles))
+    # Build the PDF document
+    pdf_buffer = BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+    doc.build(elements)
+    pdf_buffer.seek(0)
+    
+    return pdf_buffer
 @app.callback(Output('output-overall-result', 'children'),[Input("calculate-button", "n_clicks"),Input('intermediate-value', 'data')])
 def calculate(n_clicks,curr_user):
     if n_clicks is None:
         raise PreventUpdate
     print("OUTPUT_DICT",OUTPUT_DICT)
-    if len(OUTPUT_DICT) == 4:
+    if len(OUTPUT_DICT) == 7:
 
         query = {"user": curr_user}
         count = history_collection.count_documents(query)
         print("count",count)
-        if count < 6:
+        if count < 5:
             arm_angle_exceeded = True
             danger_area_detected = True
             foot_angle_violated = True
@@ -241,53 +327,9 @@ def calculate(n_clicks,curr_user):
             hist['score'] = SCORE
             hist['user'] = curr_user
             history_collection.insert_one(hist)
-
-            pdf_buffer = BytesIO()
-            doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
-            elements = []
-            heading = "Cricket Bowling Analysis Report"
-            elements.append(Paragraph(heading, styles["Heading1"]))
-            # Add content to the PDF (For demonstration, a simple table is used)
-            data = [['Report Content'], [df]]
-            table = Table(data)
-            table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ]))
-            elements.append(table)
-            
-            elements.append(Paragraph("\n\n", styles["Normal"]))
-            
-            if arm_angle_exceeded:
-                arm_angle_section = "ARM ANGLE\n\nStandardized elbow angle exceeded! You are exceeding the 15 degrees angle during the ball releasing. To avoid:\n• Focus on maintaining a relaxed wrist and grip on the ball throughout the delivery stride.\n• Focus on strengthening your shoulder, core, and leg muscles to improve stability and control during the bowling action.\n• Consciously focus on maintaining a straight and smooth arm throughout the delivery stride.\n• Keep your hand as straight as possible while delivering the ball.\n\n"
-                elements.append(Paragraph(arm_angle_section, styles["Normal"]))
-                elements.append(Paragraph("\n\n", styles["Normal"]))
-
-        
-            if danger_area_detected:
-                danger_area_section = "DANER AREA\n\nDanger area detected! You are stepping on the danger area during your follow through.\nTo avoid:\n• Shorten your stride during delivery and follow through.\n• Maintain a straight line with correct alignment.\n• Control and balance to maintain stability.\n\n"
-                elements.append(Paragraph(danger_area_section, styles["Normal"]))
-                elements.append(Paragraph("\n\n", styles["Normal"]))
-
-            
-            if foot_angle_violated:
-                foot_angle_section = "FOOT ANGLE\n\nStandardized front foot angle violated! You are keeping your front foot in a wrong angle.\nTo avoid:\n• Have a clear idea about the size of the correct angle for the foot to be kept which is from 30 to 60 degrees.\n• Be focused before taking your startup run to deliver the ball.\n• Be relaxed and mindful at the moment you keep your foot.\n\n"
-                elements.append(Paragraph(foot_angle_section, styles["Normal"]))
-                elements.append(Paragraph("\n\n", styles["Normal"]))
-
-        
-            if no_ball_detected:
-                no_ball_section = "NO BALL\n\nNo ball detected! You are overstepping the crease.\nTo avoid:\n• Maintain a proper run-up: Practice your run-up regularly and make sure it is consistent. This will help you maintain your balance and avoid overstepping the crease.\n• Focus on the crease: Keep your eyes on the crease while running in to bowl. This will help you judge the distance accurately and prevent overstepping.\n• Mark your run-up: If needed, mark your run-up with a small marker or cone. This can act as a visual cue and help you stay behind the crease.\n• Practice rhythm and timing: Work on your timing during the run-up so that your front foot lands comfortably behind the popping crease. This will reduce the chances of overstepping.\n• Develop body awareness: Pay attention to your body position and movements during the delivery stride. Practice maintaining control and balance throughout your action.\n\n"
-                elements.append(Paragraph(no_ball_section, styles["Normal"]))
-        
-            # Build the PDF document
-            doc.build(elements)
-            pdf_buffer.seek(0)
-            
+            df = df.reset_index(drop=True)
+            # Generate the PDF report
+            pdf_buffer = generate_report(df, arm_angle_exceeded, danger_area_detected, foot_angle_violated, no_ball_detected, styles)
             # Convert the PDF content to base64 for embedding in a link
             pdf_base64 = base64.b64encode(pdf_buffer.read()).decode('utf-8')
             
@@ -317,6 +359,7 @@ def calculate(n_clicks,curr_user):
         return html.Div([
                 html.P("Please upload all the images to get the result")
             ])
+
 @app.callback(
     Output('noball-status', 'children'),
     Input('upload-image', 'contents'),
